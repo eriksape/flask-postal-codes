@@ -45,7 +45,7 @@ spec:
         - containerPort: $PORT
         readinessProbe:
           httpGet:
-            path: /api/search/06060
+            path: /postal-codes/06060
             port: $PORT
           initialDelaySeconds: 5
           periodSeconds: 5

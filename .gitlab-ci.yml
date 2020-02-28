@@ -21,10 +21,10 @@ deploy beta:
   stage: deploy
   environment:
     name: beta-$CI_COMMIT_REF_SLUG
-    url: https://beta.postal-codes.arkangeles.co/$CI_COMMIT_REF_SLUG
+    url: https://beta.postal-codes.api.arkangeles.co/$CI_COMMIT_REF_SLUG
     on_stop: stop_beta
   script:
-    - NODE_ENV=beta CI_DEPLOY_HOST=beta.postal-codes.arkangeles.co CI_COMMIT_TAG=$CI_COMMIT_REF_SLUG envsubst < deployment-template.yaml > deployment.yaml
+    - NODE_ENV=beta CI_DEPLOY_HOST=beta.postal-codes.api.arkangeles.co CI_COMMIT_TAG=$CI_COMMIT_REF_SLUG envsubst < deployment-template.yaml > deployment.yaml
     - kubectl apply -f deployment.yaml
 
 deploy production:
@@ -32,11 +32,11 @@ deploy production:
   stage: deploy
   environment:
     name: production-$CI_COMMIT_REF_SLUG
-    url: https://postal-codes.arkangeles.co/$CI_COMMIT_REF_SLUG
+    url: https://postal-codes.api.arkangeles.co/$CI_COMMIT_REF_SLUG
     on_stop: stop_production
   when: manual
   script:
-    - NODE_ENV=production CI_DEPLOY_HOST=postal-codes.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
+    - NODE_ENV=production CI_DEPLOY_HOST=postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
     - kubectl apply -f deployment.yaml
 
 stop_beta:
@@ -44,7 +44,7 @@ stop_beta:
   stage: deploy
   script:
     - echo "Remove beta-$CI_COMMIT_REF_SLUG"
-    - CI_DEPLOY_HOST=deleted.postal-codes.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
+    - CI_DEPLOY_HOST=deleted.postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
     - kubectl delete -f deployment.yaml
   when: manual
   environment:
@@ -56,7 +56,7 @@ stop_production:
   stage: deploy
   script:
     - echo "Remove production-$CI_COMMIT_REF_SLUG"
-    - CI_DEPLOY_HOST=deleted.postal-codes.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
+    - CI_DEPLOY_HOST=deleted.postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
     - kubectl delete -f deployment.yaml
   when: manual
   environment:

@@ -7,7 +7,7 @@ def create_app(config_filename):
     application.config.from_object(config_filename)
     
     from app import api_bp
-    application.register_blueprint(api_bp, url_prefix='/api')
+    application.register_blueprint(api_bp)
 
     from models import db
     db.init_app(application)
