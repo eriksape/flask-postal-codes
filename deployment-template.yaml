@@ -1,0 +1,98 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: $CI_ENVIRONMENT_SLUG-postal-codes
+  name: $CI_ENVIRONMENT_SLUG-postal-codes
+spec:
+  selector:
+    matchLabels:
+      app: $CI_ENVIRONMENT_SLUG-postal-codes
+  replicas: $REPLICAS
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 25%
+      maxSurge: 100%
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: $CI_ENVIRONMENT_SLUG-postal-codes
+    spec:
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - $CI_ENVIRONMENT_SLUG-postal-codes
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - args:
+        - application.py
+        env:
+        - name: PORT
+          value: "$PORT"
+        - name: HOST
+          value: "$HOST"
+        image: $CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA
+        name: api
+        ports:
+        - containerPort: $PORT
+        readinessProbe:
+          httpGet:
+            path: /api/search/06060
+            port: $PORT
+          initialDelaySeconds: 5
+          periodSeconds: 5
+          successThreshold: 1
+        imagePullPolicy: Always
+        resources: {}
+      restartPolicy: Always
+      imagePullSecrets:
+      - name: gitlab-registry
+status: {}
+---
+apiVersion: v1
+kind: Service
+metadata: 
+  name: $CI_ENVIRONMENT_SLUG-postal-codes-svc
+spec: 
+  ports: 
+     -  port: $PORT
+        protocol: TCP
+        targetPort: $PORT
+  selector: 
+    app: $CI_ENVIRONMENT_SLUG-postal-codes
+  type: NodePort
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: $CI_ENVIRONMENT_SLUG-postal-codes-ingress
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    certmanager.k8s.io/cluster-issuer: letsencrypt-prod
+    ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/enable-cors: "true"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "POST, GET, PATCH, DELETE"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "*"
+    nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  tls:
+    - hosts:
+      - $CI_DEPLOY_HOST
+      secretName: $NODE_ENV-postal-codes-tls-certificate
+  rules:
+  - host: $CI_DEPLOY_HOST
+    http:
+      paths:
+      - path: /$CI_COMMIT_REF_SLUG(/|$)(.*)
+        backend:
+          serviceName: $CI_ENVIRONMENT_SLUG-postal-codes-svc
+          servicePort: $PORT
