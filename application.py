@@ -1,8 +1,6 @@
 from flask import Flask
 from flask_cors import CORS
-
-
-
+from os import environ as env
 
 def create_app(config_filename):
     application = Flask(__name__)
@@ -21,4 +19,8 @@ application = create_app("config")
 
 if __name__ == "__main__":
     
-    application.run(debug=True)
+    debug = (env.get("DEBUG") == 'true')
+    port = int(env.get("PORT", 5000))
+    host = env.get("HOST", '127.0.0.1')
+
+    application.run(debug=debug, port=port, host=host)
