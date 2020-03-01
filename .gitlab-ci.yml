@@ -24,8 +24,9 @@ deploy beta:
     url: https://beta.postal-codes.api.arkangeles.co/$CI_COMMIT_REF_SLUG
     on_stop: stop_beta
   script:
+    - kubectl create secret docker-registry gitlab-registry --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --save-config --dry-run -o yaml > secret.yaml
     - NODE_ENV=beta CI_DEPLOY_HOST=beta.postal-codes.api.arkangeles.co CI_COMMIT_TAG=$CI_COMMIT_REF_SLUG envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl apply -f deployment.yaml
+    - kubectl apply -f deployment.yaml -f secret.yaml
 
 deploy production:
   image: thisiskj/kubectl-envsubst
