@@ -16,50 +16,57 @@ build:
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
 
-deploy beta:
+.deploy: &deploy
   image: thisiskj/kubectl-envsubst
   stage: deploy
+  script:
+    - kubectl create secret docker-registry gitlab-registry --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --dry-run -o yaml --save-config > secret.yaml
+    - envsubst < deployment-template.yaml > deployment.yaml
+    - kubectl apply -f deployment.yaml -f secret.yaml
+
+deploy:beta:
+  <<: *deploy
+  dependencies:
+    - build
   environment:
     name: beta-$CI_COMMIT_REF_SLUG
     url: https://beta.postal-codes.api.arkangeles.co/$CI_COMMIT_REF_SLUG
-    on_stop: stop_beta
-  script:
-    - kubectl create secret docker-registry gitlab-registry --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --save-config --dry-run -o yaml > secret.yaml
-    - NODE_ENV=beta CI_DEPLOY_HOST=beta.postal-codes.api.arkangeles.co CI_COMMIT_TAG=$CI_COMMIT_REF_SLUG envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl apply -f deployment.yaml -f secret.yaml
+    on_stop: stop:beta
+  variables:
+    NODE_ENV: beta
+    CI_DEPLOY_HOST: beta.postal-codes.api.arkangeles.co
 
-deploy production:
-  image: thisiskj/kubectl-envsubst
-  stage: deploy
+deploy:prod:
+  <<: *deploy
+  dependencies:
+    - build
+  when: manual
   environment:
     name: production-$CI_COMMIT_REF_SLUG
     url: https://postal-codes.api.arkangeles.co/$CI_COMMIT_REF_SLUG
-    on_stop: stop_production
-  when: manual
-  script:
-    - NODE_ENV=production CI_DEPLOY_HOST=postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl apply -f deployment.yaml
+    on_stop: stop:production
+  variables:
+    NODE_ENV: production
+    CI_DEPLOY_HOST: postal-codes.api.arkangeles.co
 
-stop_beta:
+.stop: &stop
   image: thisiskj/kubectl-envsubst
   stage: deploy
+  variables:
+    CI_DEPLOY_HOST: deleted.postal-codes.api.arkangeles.co
   script:
-    - echo "Remove beta-$CI_COMMIT_REF_SLUG"
-    - CI_DEPLOY_HOST=deleted.postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
+    - envsubst < deployment-template.yaml > deployment.yaml
     - kubectl delete -f deployment.yaml
   when: manual
+
+stop:beta:
+  <<: *stop
   environment:
     name: beta-$CI_COMMIT_REF_SLUG
     action: stop
 
-stop_production:
-  image: thisiskj/kubectl-envsubst
-  stage: deploy
-  script:
-    - echo "Remove production-$CI_COMMIT_REF_SLUG"
-    - CI_DEPLOY_HOST=deleted.postal-codes.api.arkangeles.co envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl delete -f deployment.yaml
-  when: manual
+stop:production:
+  <<: *stop
   environment:
     name: production-$CI_COMMIT_REF_SLUG
     action: stop
