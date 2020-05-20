@@ -30,11 +30,11 @@ deploy:beta:
     - build
   environment:
     name: beta-$CI_COMMIT_REF_SLUG
-    url: https://beta.api.arkangeles.co/$CI_COMMIT_REF_SLUG
+    url: https://beta.api.arkangeles.com/$CI_COMMIT_REF_SLUG
     on_stop: stop:beta
   variables:
     NODE_ENV: beta
-    CI_DEPLOY_HOST: beta.api.arkangeles.co
+    CI_DEPLOY_HOST: beta.api.arkangeles.com
 
 deploy:prod:
   <<: *deploy
@@ -43,17 +43,17 @@ deploy:prod:
   when: manual
   environment:
     name: production-$CI_COMMIT_REF_SLUG
-    url: https://api.arkangeles.co/$CI_COMMIT_REF_SLUG
+    url: https://api.arkangeles.com/$CI_COMMIT_REF_SLUG
     on_stop: stop:production
   variables:
     NODE_ENV: production
-    CI_DEPLOY_HOST: api.arkangeles.co
+    CI_DEPLOY_HOST: api.arkangeles.com
 
 .stop: &stop
   image: thisiskj/kubectl-envsubst
   stage: deploy
   variables:
-    CI_DEPLOY_HOST: deleted.api.arkangeles.co
+    CI_DEPLOY_HOST: deleted.api.arkangeles.com
   script:
     - envsubst < deployment-template.yaml > deployment.yaml
     - kubectl delete -f deployment.yaml
