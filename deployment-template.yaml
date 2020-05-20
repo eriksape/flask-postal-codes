@@ -79,10 +79,10 @@ metadata:
     certmanager.k8s.io/cluster-issuer: letsencrypt-prod
     ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-methods: "POST, GET, PATCH, DELETE"
+    nginx.ingress.kubernetes.io/cors-allow-methods: "GET"
     nginx.ingress.kubernetes.io/cors-allow-origin: "*"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
-    nginx.ingress.kubernetes.io/rewrite-target: /$2
+    nginx.ingress.kubernetes.io/rewrite-target: /postal-codes/$2
 spec:
   tls:
     - hosts:
@@ -92,7 +92,7 @@ spec:
   - host: $CI_DEPLOY_HOST
     http:
       paths:
-      - path: /$CI_COMMIT_REF_SLUG(/|$)(.*)
+      - path: /$CI_COMMIT_REF_SLUG/postal-codes(/|$)(.*)
         backend:
           serviceName: $CI_ENVIRONMENT_SLUG-postal-codes-svc
           servicePort: $PORT
