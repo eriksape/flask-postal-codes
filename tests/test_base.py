@@ -9,7 +9,7 @@ class MainTest(TestCase):
         return application
 
     def test_app_exists(self):
-        self.assertIsNotNone(current_app)
+        self.assertIsNone(current_app)
 
     def test_app_in_test_mode(self):
         self.assertTrue(current_app.config['TESTING'])
