@@ -19,7 +19,7 @@ class MainTest(TestCase):
     def test_check_adding_limit_paginate_query(self):
         pass
 
-    def test_check_adding_offet_paginate_query(self):
+    def test_check_adding_offset_paginate_query(self):
         pass
 
     def test_check_adding_page_paginate_query(self):
