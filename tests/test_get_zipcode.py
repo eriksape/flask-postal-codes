@@ -44,3 +44,8 @@ class MainTest(TestCase):
         response = self.client.get('/postal-codes/6060')
         self.assert400(response)
         self.assertEquals(response.json, dict(message='Not a valid code'))
+
+    def test_not_found_postal_code(self):
+        response = self.client.get('/postal-codes/00000')
+        self.assert404(response)
+        self.assertEquals(response.json, dict(message='Code not found'))
