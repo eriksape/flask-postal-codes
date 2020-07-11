@@ -1,6 +1,8 @@
+from os import environ
+
 from flask import Flask, jsonify
 from flask_cors import CORS
-from os import environ as env
+from werkzeug.exceptions import HTTPException
 
 
 def create_app(config_filename):
@@ -20,14 +22,18 @@ def create_app(config_filename):
 application = create_app("config")
 
 
-@application.errorhandler(404)
-def resource_not_found(e):
-    return jsonify(error=str(e)), 404
+@application.errorhandler(HTTPException)
+def handle_exception(e):
+    """Return JSON instead of HTML for HTTP errors."""
+    data = dict(
+        message=e.description,
+    )
+    return jsonify(data), e.code
 
 
 if __name__ == "__main__":
-    debug = (env.get("DEBUG") == 'true')
-    port = int(env.get("PORT", 5000))
-    host = env.get("HOST", '127.0.0.1')
+    debug = (environ.get("DEBUG") == 'true')
+    port = int(environ.get("PORT", 5000))
+    host = environ.get("HOST", '127.0.0.1')
 
     application.run(debug=debug, port=port, host=host)
