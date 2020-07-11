@@ -3,10 +3,19 @@ from models import (
     Municipio,
     Asentamiento
 )
+from .PostalCodeRegex import zipcodes_regex
+
+
+def validate(country_code, zip_code):
+    """Checks if the zip code is a valid one"""
+    import re
+    verify = re.compile(zipcodes_regex[country_code])
+    return verify.match(zip_code)
+
 
 def search(codigo_postal):
     settlements = Asentamiento.query.filter_by(codigo_postal=codigo_postal).all()
-    if len(settlements)>0:
+    if len(settlements) > 0:
         codigo_postal = {
             'zip_code': settlements[0].codigo_postal,
             'state': {
@@ -19,7 +28,7 @@ def search(codigo_postal):
                 'name': settlements[0].municipio.nombre,
                 'c_mnpio': settlements[0].municipio.c_mnpio
             },
-            'settlements' : []
+            'settlements': []
         }
         for settlement in settlements:
             codigo_postal['settlements'].append({
@@ -28,9 +37,10 @@ def search(codigo_postal):
                 'type': settlement.tipo,
                 'id_asenta_cpcons': settlement.id_asenta_cpcons,
                 'c_cve_ciudad': settlement.c_cve_ciudad
-            })        
-        return codigo_postal    
+            })
+        return codigo_postal
     return {}
+
 
 def get_states(**kwargs):
     elements = []
@@ -45,7 +55,7 @@ def get_states(**kwargs):
             })
     except Exception as e:
         print('Error:', str(e))
-    
+
     return elements
 
 
@@ -82,6 +92,7 @@ def get_municipalities(**kwargs):
         print('Error:', str(e))
 
     return elements
+
 
 def get_settlements(**kwargs):
     elements = []
