@@ -5,7 +5,8 @@ services:
 
 stages:
   - build
-  - deploy
+  - testing
+  #- deploy
 
 build:
   stage: build
@@ -15,6 +16,16 @@ build:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker build --pull -t "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA" .
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_REF_SLUG-$CI_COMMIT_SHORT_SHA"
+
+tests:
+  stage: testing
+  image: python:3.6-alpine
+  script:
+    - pip install -r requirements.txt
+    - python test.py
+  only:
+    refs:
+      - merge_requests
 
 .deploy: &deploy
   image: thisiskj/kubectl-envsubst
