@@ -6,7 +6,7 @@ services:
 stages:
   - build
   - testing
-  #- deploy
+#  - deploy
 
 build:
   stage: build
@@ -27,57 +27,57 @@ tests:
     refs:
       - merge_requests
 
-.deploy: &deploy
-  image: thisiskj/kubectl-envsubst
-  stage: deploy
-  script:
-    - kubectl create secret docker-registry gitlab-registry --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --dry-run -o yaml --save-config > secret.yaml
-    - envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl apply -f deployment.yaml -f secret.yaml
-
-deploy:beta:
-  <<: *deploy
-  dependencies:
-    - build
-  environment:
-    name: beta-$CI_COMMIT_REF_SLUG
-    url: https://beta.api.arkangeles.com/$CI_COMMIT_REF_SLUG
-    on_stop: stop:beta
-  variables:
-    NODE_ENV: beta
-    CI_DEPLOY_HOST: beta.api.arkangeles.com
-
-deploy:prod:
-  <<: *deploy
-  dependencies:
-    - build
-  when: manual
-  environment:
-    name: production-$CI_COMMIT_REF_SLUG
-    url: https://api.arkangeles.com/$CI_COMMIT_REF_SLUG
-    on_stop: stop:production
-  variables:
-    NODE_ENV: production
-    CI_DEPLOY_HOST: api.arkangeles.com
-
-.stop: &stop
-  image: thisiskj/kubectl-envsubst
-  stage: deploy
-  variables:
-    CI_DEPLOY_HOST: deleted.api.arkangeles.com
-  script:
-    - envsubst < deployment-template.yaml > deployment.yaml
-    - kubectl delete -f deployment.yaml
-  when: manual
-
-stop:beta:
-  <<: *stop
-  environment:
-    name: beta-$CI_COMMIT_REF_SLUG
-    action: stop
-
-stop:production:
-  <<: *stop
-  environment:
-    name: production-$CI_COMMIT_REF_SLUG
-    action: stop
+#.deploy: &deploy
+#  image: thisiskj/kubectl-envsubst
+#  stage: deploy
+#  script:
+#    - kubectl create secret docker-registry gitlab-registry --docker-server=$CI_REGISTRY --docker-username=$CI_DEPLOY_USER --docker-password=$CI_DEPLOY_PASSWORD --dry-run -o yaml --save-config > secret.yaml
+#    - envsubst < deployment-template.yaml > deployment.yaml
+#    - kubectl apply -f deployment.yaml -f secret.yaml
+#
+#deploy:beta:
+#  <<: *deploy
+#  dependencies:
+#    - build
+#  environment:
+#    name: beta-$CI_COMMIT_REF_SLUG
+#    url: https://beta.api.arkangeles.com/$CI_COMMIT_REF_SLUG
+#    on_stop: stop:beta
+#  variables:
+#    NODE_ENV: beta
+#    CI_DEPLOY_HOST: beta.api.arkangeles.com
+#
+#deploy:prod:
+#  <<: *deploy
+#  dependencies:
+#    - build
+#  when: manual
+#  environment:
+#    name: production-$CI_COMMIT_REF_SLUG
+#    url: https://api.arkangeles.com/$CI_COMMIT_REF_SLUG
+#    on_stop: stop:production
+#  variables:
+#    NODE_ENV: production
+#    CI_DEPLOY_HOST: api.arkangeles.com
+#
+#.stop: &stop
+#  image: thisiskj/kubectl-envsubst
+#  stage: deploy
+#  variables:
+#    CI_DEPLOY_HOST: deleted.api.arkangeles.com
+#  script:
+#    - envsubst < deployment-template.yaml > deployment.yaml
+#    - kubectl delete -f deployment.yaml
+#  when: manual
+#
+#stop:beta:
+#  <<: *stop
+#  environment:
+#    name: beta-$CI_COMMIT_REF_SLUG
+#    action: stop
+#
+#stop:production:
+#  <<: *stop
+#  environment:
+#    name: production-$CI_COMMIT_REF_SLUG
+#    action: stop
