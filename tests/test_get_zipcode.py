@@ -39,3 +39,8 @@ class MainTest(TestCase):
         self.assertTrue('type' in response.json['settlements'][0])
         self.assertTrue('id_asenta_cpcons' in response.json['settlements'][0])
         self.assertTrue('c_cve_ciudad' in response.json['settlements'][0])
+
+    def test_validate_postal_code(self):
+        response = self.client.get('/postal-codes/6060')
+        self.assert400(response)
+        self.assertEquals(response.json, dict(message='Not a valid code'))
