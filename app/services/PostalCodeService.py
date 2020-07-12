@@ -8,7 +8,7 @@ from app.models import (
 )
 
 
-def validate(country_code, zip_code):
+def validate_zip_code(country_code, zip_code):
     """Checks if the zip code is a valid one"""
     import re
     from app.consts.PostalCodeRegex import zipcodes_regex
