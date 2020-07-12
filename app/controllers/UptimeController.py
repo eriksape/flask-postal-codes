@@ -17,6 +17,7 @@ class UptimeController:
         app.session.add(data)
         app.session.commit()
 
+        print('updated deployed time with {} in ms'.format(ms_time))
         return ms_time
 
     @staticmethod

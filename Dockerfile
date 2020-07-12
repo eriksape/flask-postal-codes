@@ -4,4 +4,4 @@ WORKDIR /usr/src/api/
 COPY . .
 RUN pip install -r requirements.txt
 
-CMD ["/bin/sh", "-c", "python main.py"]
+CMD ["/bin/sh", "-c", "flask deploy-script && python main.py"]
