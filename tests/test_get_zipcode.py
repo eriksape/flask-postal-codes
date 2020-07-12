@@ -1,5 +1,5 @@
 from flask_testing import TestCase
-from app.main import app
+from main import app
 
 
 class MainTest(TestCase):
