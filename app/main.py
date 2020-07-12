@@ -26,9 +26,9 @@ def handle_exception(e):
 @app.route('/postal-codes')
 def get_postal_codes():
     result = PostalCodeController.get_all()
-    response = make_response(json.dumps(result))
+    response = make_response(json.dumps(result['data']))
     response.headers['Content-Type'] = 'application/json'
-    response.headers['x-total-count'] = 100
+    response.headers['x-total-count'] = result['total']
     return response
 
 
