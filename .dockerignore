@@ -1,0 +1,7 @@
+.git
+.gitlab-ci.yml
+development.dockerfile
+Dockerfile
+env/
+.idea/
+__pycache__/

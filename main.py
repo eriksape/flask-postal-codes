@@ -3,9 +3,9 @@ from flask_cors import CORS
 from sqlalchemy.orm import scoped_session
 from werkzeug.exceptions import HTTPException
 
-from . import models
-from .controllers.PostalCodeController import PostalCodeController
-from .database import SessionLocal, engine
+from app import models
+from app.controllers.PostalCodeController import PostalCodeController
+from app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
 
