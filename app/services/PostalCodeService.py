@@ -1,20 +1,23 @@
-from models import (
+from flask import current_app as app
+from sqlalchemy import desc, asc
+
+from app.models import (
     Estado,
     Municipio,
     Asentamiento
 )
-from .PostalCodeRegex import zipcodes_regex
 
 
-def validate(country_code, zip_code):
+def validate_zip_code(country_code, zip_code):
     """Checks if the zip code is a valid one"""
     import re
+    from app.consts.PostalCodeRegex import zipcodes_regex
     verify = re.compile(zipcodes_regex[country_code])
     return verify.match(zip_code)
 
 
 def search(codigo_postal):
-    settlements = Asentamiento.query.filter_by(codigo_postal=codigo_postal).all()
+    settlements = app.session.query(Asentamiento).filter_by(codigo_postal=codigo_postal).all()
     if len(settlements) > 0:
         codigo_postal = {
             'zip_code': settlements[0].codigo_postal,
@@ -94,47 +97,40 @@ def get_municipalities(**kwargs):
     return elements
 
 
-def get_settlements(**kwargs):
-    elements = []
+def get_settlements(limit=100, offset=0, page=1, sort='codigo_postal', order='ASC'):
+    if offset < 1:
+        offset = limit * (page - 1)
 
-    _nested = kwargs.get('nested', False)
-    try:
-        del kwargs['nested']
-    except Exception as e:
-        pass
+    settlements = app.session.query(Asentamiento).join(Asentamiento.municipio).join(Municipio.estado)
 
-    try:
-        settlements = Asentamiento.query.filter_by(**kwargs)
-        for settlement in settlements:
-            if _nested:
-                elements.append({
-                    'id': settlement.id,
-                    'name': settlement.nombre,
-                    'type': settlement.tipo,
-                    'id_asenta_cpcons': settlement.id_asenta_cpcons,
-                    'c_cve_ciudad': settlement.c_cve_ciudad,
-                    'municipality': {
-                        'id': settlement.municipio.id,
-                        'name': settlement.municipio.nombre,
-                        'c_mnpio': settlement.municipio.c_mnpio,
-                        'state': {
-                            'id': settlement.municipio.estado.id,
-                            'name': settlement.municipio.estado.nombre,
-                            'c_estado': settlement.municipio.estado.c_estado
-                        }
-                    }
-                })
-            else:
-                elements.append({
-                    'id': settlement.id,
-                    'name': settlement.nombre,
-                    'type': settlement.tipo,
-                    'id_asenta_cpcons': settlement.id_asenta_cpcons,
-                    'c_cve_ciudad': settlement.c_cve_ciudad,
-                    'municipality_id': settlement.municipio.id,
-                    'state_id': settlement.municipio.estado.id
-                })
-    except Exception as e:
-        print('Error:', str(e))
+    if sort == 'codigo_postal':
+        sort = Asentamiento.codigo_postal
+    elif sort == 'estado':
+        sort = Estado.nombre
+    elif sort == 'municipio':
+        sort = Municipio.nombre
 
-    return elements
+    if order == 'ASC':
+        settlements = settlements.order_by(asc(sort)).limit(limit).offset(offset)
+    else:
+        settlements = settlements.order_by(desc(sort)).limit(limit).offset(offset)
+
+    data = list()
+    for settlement in settlements:
+        data.append({
+            'codigo_postal': settlement.codigo_postal,
+            'estado': {
+                'codigo': settlement.municipio.estado.c_estado,
+                'nombre': settlement.municipio.estado.nombre
+            },
+            'municipio': {
+                'codigo': settlement.municipio.c_mnpio,
+                'nombre': settlement.municipio.nombre
+            }
+        })
+    return data
+
+
+def get_settlements_count():
+    settlements = app.session.query(Asentamiento).count()
+    return settlements
