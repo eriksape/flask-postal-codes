@@ -1,10 +1,11 @@
-from flask import Flask, _app_ctx_stack, jsonify, url_for, make_response, json
+from flask import Flask, _app_ctx_stack, jsonify, make_response, json
 from flask_cors import CORS
 from sqlalchemy.orm import scoped_session
 from werkzeug.exceptions import HTTPException
 
 from app import models
 from app.controllers.PostalCodeController import PostalCodeController
+from app.controllers.UptimeController import UptimeController
 from app.database import SessionLocal, engine
 
 models.Base.metadata.create_all(bind=engine)
@@ -14,6 +15,11 @@ CORS(app)
 app.session = scoped_session(SessionLocal, scopefunc=_app_ctx_stack.__ident_func__)
 
 
+@app.cli.command("deploy-script")
+def deploy_script():
+    UptimeController.run_sql_script()
+
+
 @app.errorhandler(HTTPException)
 def handle_exception(e):
     """Return JSON instead of HTML for HTTP errors."""
@@ -21,6 +27,11 @@ def handle_exception(e):
         message=e.description,
     )
     return jsonify(data), e.code
+
+
+@app.route('/status')
+def status_application():
+    return jsonify(UptimeController.get())
 
 
 @app.route('/postal-codes')

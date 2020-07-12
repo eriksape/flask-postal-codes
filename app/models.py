@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Column, Integer, String, ForeignKey, BigInteger
 from sqlalchemy.orm import relationship
 from .database import Base
 import datetime
@@ -27,7 +27,6 @@ class Estado(Base, DictMixIn):
     municipio = relationship('Municipio',
                                  back_populates='estado')
 
-
 class Municipio(Base, DictMixIn):
     """
         Modelo para municipios
@@ -39,8 +38,6 @@ class Municipio(Base, DictMixIn):
     c_mnpio = Column(String(32))
     asentamientos = relationship('Asentamiento', back_populates='municipio')
     estado = relationship("Estado", back_populates="municipio")
-
-
 
 
 class Asentamiento(Base, DictMixIn):
@@ -59,3 +56,13 @@ class Asentamiento(Base, DictMixIn):
     id_asenta_cpcons = Column(String(32))
     c_cve_ciudad = Column(String(32))
     municipio = relationship("Municipio", back_populates="asentamientos")
+
+
+class Deployed(Base, DictMixIn):
+    """
+        Modelo para colonias
+    """
+    __tablename__ = 'deployed'
+    ms_time = Column(BigInteger, primary_key=True)
+
+
