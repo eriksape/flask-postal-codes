@@ -21,5 +21,10 @@ class UptimeController:
 
     @staticmethod
     def get():
-        return (1,2,3)
+        data = app.session.query(Deployed).first()
+        current_time = int(round(time() * 1000))
+
+        return {
+            'uptime': current_time - data.ms_time
+        }
 
