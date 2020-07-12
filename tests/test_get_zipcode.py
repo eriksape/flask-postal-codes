@@ -1,11 +1,11 @@
 from flask_testing import TestCase
-from application import application
+from app.main import app
 
 
 class MainTest(TestCase):
     def create_app(self):
-        application.config['TESTING'] = True
-        return application
+        app.config['TESTING'] = True
+        return app
 
     def test_getting_a_zip_code(self):
         response = self.client.get('/postal-codes/06060')

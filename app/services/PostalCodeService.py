@@ -1,20 +1,23 @@
-from models import (
+from flask import current_app as app
+from sqlalchemy import desc, asc
+
+from app.models import (
     Estado,
     Municipio,
     Asentamiento
 )
-from .PostalCodeRegex import zipcodes_regex
 
 
 def validate(country_code, zip_code):
     """Checks if the zip code is a valid one"""
     import re
+    from app.consts.PostalCodeRegex import zipcodes_regex
     verify = re.compile(zipcodes_regex[country_code])
     return verify.match(zip_code)
 
 
 def search(codigo_postal):
-    settlements = Asentamiento.query.filter_by(codigo_postal=codigo_postal).all()
+    settlements = app.session.query(Asentamiento).filter_by(codigo_postal=codigo_postal).all()
     if len(settlements) > 0:
         codigo_postal = {
             'zip_code': settlements[0].codigo_postal,

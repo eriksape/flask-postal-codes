@@ -1,12 +1,12 @@
-from flask_testing import TestCase
 from flask import current_app
-from application import application
+from flask_testing import TestCase
+from app.main import app
 
 
 class MainTest(TestCase):
     def create_app(self):
-        application.config['TESTING'] = True
-        return application
+        app.config['TESTING'] = True
+        return app
 
     def test_app_exists(self):
         self.assertIsNotNone(current_app)

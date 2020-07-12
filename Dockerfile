@@ -4,4 +4,4 @@ COPY . .
 RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python"]
-CMD ["application.py"]
+CMD ["application.py"]CMD ["app/application.py"]
